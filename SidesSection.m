@@ -136,7 +136,7 @@ function [x, y] = SidesSection(obj, action, x, y)
                     numNoGoTrials = numel(noGoInd);
                 if  numNoGoTrials>Auto_train_slide(:) %enough nogotrials?
                     %last numel(Auto_train_slide(:)) nogo trial indices
-                    noGoWinInd = noGoInd(numNoGoTrials-Auto_train_slide(:):numNoGoTrials-1);
+                    noGoWinInd = noGoInd(numNoGoTrials-Auto_train_slide(:):numNoGoTrials);
                     %all NoGo hit history within the window 
                     noGoWinHH=hit_history(noGoWinInd);
                     %percent correct for window for NoGos
@@ -149,9 +149,13 @@ function [x, y] = SidesSection(obj, action, x, y)
                 if NoGoProb <= 0.5
                     NoGoProb= 0.5;
                 end 
-                 display(' ')
-                 display(' ')
-                display('NO GO PROB SET BY NO GO PERCENTAGE')
+                display(' ')
+                display(' ')
+                display('NO GO PROB SET BY NO GO PERCENTAGE AUTOTRAINER')
+                display('MIN NO PROB SET TO 0.5')
+                display(' ')
+                display(' ')
+                display('CURRENT NOGO PROB SET TO BELOW VALUE')
                 display(num2str(NoGoProb))
  
                 end   
