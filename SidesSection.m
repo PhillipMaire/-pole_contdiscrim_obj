@@ -43,7 +43,7 @@ function [x, y] = SidesSection(obj, action, x, y)
    GetSoloFunctionArgs;
    
    switch action
-    
+
     case 'init',   % ------------ CASE INIT ----------------
       % Save the figure and the position in the figure where we are
       % going to start adding GUI elements:
@@ -55,6 +55,14 @@ function [x, y] = SidesSection(obj, action, x, y)
       % Give read-only access to AnalysisSection.m:
       SoloFunctionAddVars('AnalysisSection', 'ro_args', 'previous_sides');
       
+        % ........................
+      NumeditParam(obj, 'Auto_train_slide', 8, x, y, 'label', ...
+          'AutoTrainWinSize'); 
+      next_row(y);
+      
+      % Autotrainer mode
+      MenuParam(obj, 'AutoTrainMode', {'Off','NoGoPercSetProb' }, 'Off', x, y,'TooltipString','this is where you put instructions.');
+      next_row(y);
       
       % 'Auto trainer' max # of FAs
       NumeditParam(obj, 'autotrain_max_fas', 0, x, y, 'label', ...
@@ -98,10 +106,69 @@ function [x, y] = SidesSection(obj, action, x, y)
       SidesSection(obj, 'choose_next_side');
       SidesSection(obj, 'update_plot');
       
-      
-      
-    case 'choose_next_side', % --------- CASE CHOOSE_NEXT_SIDE -----
+  case 'choose_next_side', % --------- CASE CHOOSE_NEXT_SIDE -----
       % 108/l : nogo ; 114/r: go
+        %%%%%%%%%%%%%%%%-PSM edit below 
+      switch lower(value(AutoTrainMode))
+            % -- NO AUTOTRAINER -- just use maxSame and leftPortProb
+            case 'off'
+                pickAtRandom = 1;
+
+                % -- Alternate: simple autotrainer where, after
+                % AutoTrainMinCorrect licks are made, the autotrainer switches to
+                %  the other side ; default is right
+                
+            case 'nogopercsetprob'
+                
+                %only implements after a certain amount of trials
+                %using a sliding window setting set the no go probability
+                %tofalse alarm  %do i want the trigger to be the number of trials or the
+                %number of no-go trials??????
+                
+                %autotrainer sliding window
+                %Auto_train_slide(:) = 5; %set this to a value on GUI
+                
+                %insert a param for max and min prob to switch to
+                numTrials=numel(previous_sides(:));
+                if numTrials>Auto_train_slide(:) %enough total trials
+                    
+                    noGoInd=find(previous_sides(:)==108); 
+                    numNoGoTrials = numel(noGoInd);
+                if  numNoGoTrials>Auto_train_slide(:) %enough nogotrials?
+                    %last numel(Auto_train_slide(:)) nogo trial indices
+                    noGoWinInd = noGoInd(numNoGoTrials-Auto_train_slide(:):numNoGoTrials-1);
+                    %all NoGo hit history within the window 
+                    noGoWinHH=hit_history(noGoWinInd);
+                    %percent correct for window for NoGos
+                    noGoPercCorr= sum(noGoWinHH)/(Auto_train_slide(:));
+                    
+                    falseAlarmRate=1-noGoPercCorr;
+                    
+                    NoGoProb=falseAlarmRate;
+                 
+                if NoGoProb <= 0.5
+                    NoGoProb= 0.5;
+                end 
+                 display(' ')
+                 display(' ')
+                display('NO GO PROB SET BY NO GO PERCENTAGE')
+                display(num2str(NoGoProb))
+ 
+                end   
+                end
+        end
+      
+      
+      
+      %%%%%%%%%%%%%%%%-PSM edit above 
+      
+      
+      
+      %need to set this correctly so that the suto trainer works with the
+      %drop down for both scenerios-psm
+      
+      
+      
         
       % Is autotrainer on? if so, that means only nogo allowed
       if (value(autotraining) == 1) 
