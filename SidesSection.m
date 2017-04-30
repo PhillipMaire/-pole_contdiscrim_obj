@@ -56,18 +56,12 @@ function [x, y] = SidesSection(obj, action, x, y)
       SoloFunctionAddVars('AnalysisSection', 'ro_args', 'previous_sides');
       
         % ........................
-      %min probability used for autotrainer slide   
-        NumeditParam(obj, 'Auto_train_min_prob', 0.5, x, y, 'label', ...
-          'AutoTrainMinProb'); 
-      next_row(y);
-      %sliding window for nogoprob set by false alarm rate
-      NumeditParam(obj, 'Auto_train_slide', 30, x, y, 'label', ...
+      NumeditParam(obj, 'Auto_train_slide', 8, x, y, 'label', ...
           'AutoTrainWinSize'); 
       next_row(y);
       
       % Autotrainer mode
-      MenuParam(obj, 'AutoTrainMode', {'Off','FA_PercSetProb' }, 'Off', x, y,...
-          'TooltipString','false alarm rate = no go prob, for below win. min prob set below by min prob.');
+      MenuParam(obj, 'AutoTrainMode', {'Off','NoGoPercSetProb' }, 'Off', x, y,'TooltipString','this is where you put instructions.');
       next_row(y);
       
       % 'Auto trainer' max # of FAs
@@ -124,7 +118,7 @@ function [x, y] = SidesSection(obj, action, x, y)
                 % AutoTrainMinCorrect licks are made, the autotrainer switches to
                 %  the other side ; default is right
                 
-            case 'fa_percsetprob'
+            case 'nogopercsetprob'
                 
                 %only implements after a certain amount of trials
                 %using a sliding window setting set the no go probability
@@ -150,25 +144,19 @@ function [x, y] = SidesSection(obj, action, x, y)
                     
                     falseAlarmRate=1-noGoPercCorr;
                     
-                    if falseAlarmRate > NoGoProb(:)
-                        NoGoProb.value=falseAlarmRate;
-                        display(' ')
-                        display(' ')
-                        display('NO GO PROB SET BY AUTOTRAINER')
-                        display('MIN NO PROB SET USING GUI')
-                        display('CURRENT NOGO PROB SET TO...')
-                        display(num2str(NoGoProb(:)))
-                    else
-                        NoGoProb.value=Auto_train_min_prob(:);
-                        display(' ')
-                        display(' ')
-                        display('NO GO PROB SET BY GUI')
-                        display('FALSE ALARM RATE < NOGOPROB IN GUI')
-                        display('CURRENT NOGO PROB SET TO...')
-                        display(num2str(NoGoProb(:)))
-                    end
-
-                
+                    NoGoProb=falseAlarmRate;
+                 
+                if NoGoProb <= 0.5
+                    NoGoProb= 0.5;
+                end 
+                display(' ')
+                display(' ')
+                display('NO GO PROB SET BY NO GO PERCENTAGE AUTOTRAINER')
+                display('MIN NO PROB SET TO 0.5')
+                display(' ')
+                display(' ')
+                display('CURRENT NOGO PROB SET TO BELOW VALUE')
+                display(num2str(NoGoProb))
  
                 end   
                 end
