@@ -56,12 +56,24 @@ function [x, y] = SidesSection(obj, action, x, y)
       SoloFunctionAddVars('AnalysisSection', 'ro_args', 'previous_sides');
       
         % ........................
-      NumeditParam(obj, 'Auto_train_slide', 8, x, y, 'label', ...
+
+      %max nogoprobability used for autotrainer slide   
+        NumeditParam(obj, 'Auto_train_max_prob', 0.7, x, y, 'label', ...
+          'ATFA_MaxNoGOProb');     
+       next_row(y);
+      %min nogoprobability used for autotrainer slide   
+        NumeditParam(obj, 'Auto_train_min_prob', 0.5, x, y, 'label', ...
+          'ATFA_MinNoGOProb'); 
+      
+      next_row(y);
+      %sliding window for nogoprob set by false alarm rate
+      NumeditParam(obj, 'Auto_train_slide', 30, x, y, 'label', ...
           'AutoTrainWinSize'); 
       next_row(y);
       
       % Autotrainer mode
-      MenuParam(obj, 'AutoTrainMode', {'Off','NoGoPercSetProb' }, 'Off', x, y,'TooltipString','this is where you put instructions.');
+      MenuParam(obj, 'AutoTrainMode', {'Off','FA_PercSetProb' }, 'Off', x, y,...
+          'TooltipString','false alarm rate = no go prob, for below win. min prob set below by min prob.');
       next_row(y);
       
       % 'Auto trainer' max # of FAs
@@ -118,7 +130,7 @@ function [x, y] = SidesSection(obj, action, x, y)
                 % AutoTrainMinCorrect licks are made, the autotrainer switches to
                 %  the other side ; default is right
                 
-            case 'nogopercsetprob'
+            case 'fa_percsetprob'
                 
                 %only implements after a certain amount of trials
                 %using a sliding window setting set the no go probability
@@ -136,7 +148,7 @@ function [x, y] = SidesSection(obj, action, x, y)
                     numNoGoTrials = numel(noGoInd);
                 if  numNoGoTrials>Auto_train_slide(:) %enough nogotrials?
                     %last numel(Auto_train_slide(:)) nogo trial indices
-                    noGoWinInd = noGoInd(numNoGoTrials-Auto_train_slide(:):numNoGoTrials);
+                    noGoWinInd = noGoInd(numNoGoTrials-Auto_train_slide(:)+1:numNoGoTrials);
                     %all NoGo hit history within the window 
                     noGoWinHH=hit_history(noGoWinInd);
                     %percent correct for window for NoGos
@@ -144,19 +156,32 @@ function [x, y] = SidesSection(obj, action, x, y)
                     
                     falseAlarmRate=1-noGoPercCorr;
                     
-                    NoGoProb=falseAlarmRate;
-                 
-                if NoGoProb <= 0.5
-                    NoGoProb= 0.5;
-                end 
-                display(' ')
-                display(' ')
-                display('NO GO PROB SET BY NO GO PERCENTAGE AUTOTRAINER')
-                display('MIN NO PROB SET TO 0.5')
-                display(' ')
-                display(' ')
-                display('CURRENT NOGO PROB SET TO BELOW VALUE')
-                display(num2str(NoGoProb))
+                     if falseAlarmRate >= Auto_train_min_prob(:) && falseAlarmRate <= Auto_train_max_prob(:)
+                        NoGoProb.value=falseAlarmRate;
+                        display(' ')
+                        display(' ')
+                        display('NO GO PROB SET BY AUTOTRAINER')
+                        display('MIN NO PROB SET USING GUI')
+                        display('CURRENT NOGO PROB SET TO...')
+                        display(num2str(NoGoProb(:)))
+                    elseif falseAlarmRate < Auto_train_min_prob(:);
+                        NoGoProb.value=Auto_train_min_prob(:);
+                        display(' ')
+                        display(' ')
+                        display('NO GO PROB SET BY GUI')
+                        display('FALSE ALARM RATE < NOGOPROB IN GUI')
+                        display('CURRENT NOGO PROB SET TO...')
+                        display(num2str(NoGoProb(:)))
+                    elseif falseAlarmRate > Auto_train_max_prob(:);
+                        NoGoProb.value=Auto_train_max_prob(:);
+                        display(' ')
+                        display(' ')
+                        display('NO GO PROB SET BY GUI')
+                        display('FALSE ALARM RATE > NOGOPROB IN GUI')
+                        display('CURRENT NOGO PROB SET TO...')
+                        display(num2str(NoGoProb(:)))
+                    end
+                
  
                 end   
                 end
