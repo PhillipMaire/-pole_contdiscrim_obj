@@ -300,15 +300,15 @@ ArcLengthNOGO = 2*pi*radius*nogo_degrees/360;
  %x2 = center_main(:)
  %y2 = center_lat(:)
  
- length = abs(center_main(:) - post_go(:));
- height = abs(center_lat(:) - post_go_lat(:));
+ length = center_main(:) - post_go(:);
+ height = center_lat(:) - post_go_lat(:);
  
  lengthBase = sqrt(length^2 + height^2);
  halfBase = lengthBase/2;
  
- angleToPostGoPosition = 2*(180/pi)*asin((halfBase/radius)*(pi/180));%in degrees 
-            
-            
+%in degrees 
+ angleToPostGoPosition = asind(length/radius);           
+
             
             if next_side == 'r'
                 next_pole_angle = go_degrees(:)*((round(rand*(ArcLengthGO)))/ArcLengthGO)+angleToPostGoPosition+AddedAngle;
@@ -329,10 +329,19 @@ ArcLengthNOGO = 2*pi*radius*nogo_degrees/360;
                 error('un-recognized type for next_side');
             end
 
-            angle_startTOantGO = angleToPostGoPosition + go_degrees+AddedAngle;
-            angle_startTOantGAP = angle_startTOantGO + gap_degrees;
-            angle_startTOantNOGO = angle_startTOantGAP + nogo_degrees;
-            
+            angle_startTOantGO = angleToPostGoPosition + go_degrees(:)+AddedAngle;
+            angle_startTOantGAP = angle_startTOantGO + gap_degrees(:);
+            angle_startTOantNOGO = angle_startTOantGAP + nogo_degrees(:);
+            if angle_startTOantNOGO > 120 || angle_startTOantNOGO < -90
+                while angle_startTOantNOGO > 120 || angle_startTOantNOGO < -90
+                warning('your angle from vertical downward axis (negative y axis from center)is more than 120 or less than -90. this might hurt the mouse please override or change')
+            angle_startTOantGO = angleToPostGoPosition + go_degrees(:)+AddedAngle;
+            angle_startTOantGAP = angle_startTOantGO + gap_degrees(:);
+            angle_startTOantNOGO = angle_startTOantGAP + nogo_degrees(:);
+            '10 sec pause while greater than 120 or less than -90'
+            pause(10);
+                end
+            end
             antGOposition_main = center_main(:) - radius * sind(angle_startTOantGO);
             antGOposition_lat = center_lat(:) - radius * cosd(angle_startTOantGO);            
             
