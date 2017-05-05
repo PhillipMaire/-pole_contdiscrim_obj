@@ -86,7 +86,7 @@ switch action
         
         % ---  Make new window for motor configuration
         SoloParamHandle(obj, 'motorfig', 'saveable', 0);
-        motorfig.value = figure('Position', [3 800 400 200], 'Menubar', 'none',...
+        motorfig.value = figure('Position', [3 500 400 400], 'Menubar', 'none',...
             'Toolbar', 'none','Name','Motor Control','NumberTitle','off');
 
         x = 1; y = 1;
@@ -104,6 +104,7 @@ switch action
 %         set_callback(reset_motors_firmware, {mfilename, 'reset_motors_firmware'});
 %         next_row(y);
 
+
         PushButtonParam(obj, 'motors_home', x, y, 'label', 'Home motor');
         set_callback(motors_home, {mfilename, 'motors_home'});
         next_row(y);
@@ -115,6 +116,64 @@ switch action
         PushButtonParam(obj, 'motors_reset', x, y, 'label', 'Reset motor');
         set_callback(motors_reset, {mfilename, 'motors_reset'});
         next_row(y, 2);
+        
+%%%%%%%%%%%%%%%%%%%%%%%%%%%adding joystick gui -PSM
+        PushButtonParam(obj, 'move_down', x, y, 'label', 'DOWN');
+        set_callback(move_down, {mfilename, 'move_down'});
+        next_row(y);
+        
+        PushButtonParam(obj, 'move_right', x, y, 'label', 'RIGHT');
+        set_callback(move_right, {mfilename, 'move_right'});
+        next_row(y);
+                
+        PushButtonParam(obj, 'move_left', x, y, 'label', 'LEFT');
+        set_callback(move_left, {mfilename, 'move_left'});
+        next_row(y);
+               
+        PushButtonParam(obj, 'move_up', x, y, 'label', 'UP');
+        set_callback(move_up, {mfilename, 'move_up'});
+        next_row(y);
+
+        NumeditParam(obj, 'joystick_increment', 8000, x, y, 'label', ...
+            'JoystickIncrement','TooltipString','set joystick step size');
+        next_row(y,2);      
+        %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+       
+        NumeditParam(obj, 'nogo_degrees', 20, x, y, 'label', ...
+            'NOGO_degrees','TooltipString','set nogo angle size in degrees');        
+        next_row(y);              
+
+        NumeditParam(obj, 'gap_degrees', 15, x, y, 'label', ...
+            'GAP_degrees','TooltipString','set go angle size in degrees');
+        next_row(y);        
+        
+        NumeditParam(obj, 'go_degrees', 20, x, y, 'label', ...
+            'GO_degrees','TooltipString','set go angle size in degrees');
+        next_row(y); 
+        
+        SubheaderParam(obj, 'title', 'Arc_mode_set', x, y);
+        next_row(y);
+        %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+        MenuParam(obj, 'position_mode', {'arc' 'normal'}, 'normal', x, y,...
+          'TooltipString','Arc- set by degrees and post go position');
+        next_row(y);
+
+        PushButtonParam(obj, 'show_go_arc', x, y, 'label', 'show_go_arc');
+        set_callback(show_go_arc, {mfilename, 'show_go_arc'});      
+        next_row(y);
+        
+        PushButtonParam(obj, 'show_gap_arc', x, y, 'label', 'show_gap_arc');
+        set_callback(show_gap_arc, {mfilename, 'show_gap_arc'});      
+        next_row(y);
+        
+        PushButtonParam(obj, 'show_nogo_arc', x, y, 'label', 'show_nogo_arc');
+        set_callback(show_nogo_arc, {mfilename, 'show_nogo_arc'});      
+        next_row(y);        
+        %%%%these need to be implemented by making an array of positions
+        %%%%and then the motor position has go through the positions with a
+        %%%%very small pause to show user where the pole will be.-PSM
+%%%%%%%%%%%%%%%%%%%%%%%%%%%adding joystick gui -PSM
+        
         
         next_column(x); y = 1;
         
@@ -176,8 +235,39 @@ switch action
 
         next_row(y);
         SubheaderParam(obj, 'title', 'Trial position', x, y);
-        
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
+next_row(y);
+        NumeditParam(obj, 'post_go_lat', 0, x, y, 'label', ...
+            'post_go_lat','TooltipString','posterior go position for lateral motor(arc mode)');
+        set_callback(post_go_lat, {mfilename, 'post_go_lat'});
+next_row(y);
+        NumeditParam(obj, 'post_go', 0, x, y, 'label', ...
+            'post_go','TooltipString','posterior go position for main motor(arc mode)');
+        set_callback(post_go, {mfilename, 'post_go'});
+next_row(y);
+        PushButtonParam(obj, 'set_both_post_go', x, y, 'label', ...
+            'set_both_post_go','TooltipString',...
+            'set currents motor position as posterior go position for main and lateral motors(arc mode)');
+        set_callback(set_both_post_go, {mfilename, 'set_both_post_go'});  
+next_row(y);        
+        NumeditParam(obj, 'center_lat', 0, x, y, 'label', ...
+            'center_lat','TooltipString','center_lateral (y value) for the arc');
+        set_callback(center_lat, {mfilename, 'center_lat'});
+next_row(y);
+        NumeditParam(obj, 'center_main', 0, x, y, 'label', ...
+            'center_main','TooltipString','center_main (x value) for the arc');
+        set_callback(center_main, {mfilename, 'center_main'});
+next_row(y);
+        PushButtonParam(obj, 'set_center', x, y, 'label', ...
+            'set_center','TooltipString',...
+            'set_center of arc(arc mode)');
+        set_callback(set_center, {mfilename, 'set_center'});  
+next_row(y);        
+        
+        
+        SubheaderParam(obj, 'title', 'Arc_mode_set', x, y);
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
         MotorsSection(obj,'hide_show');
         MotorsSection(obj,'read_positions');
         MotorsSection(obj,'read_lateral_positions');
@@ -187,10 +277,93 @@ switch action
         return;
 
     case 'move_next_side', % --------- CASE MOVE_NEXT_SIDE -----
-       
-        next_side = SidesSection(obj,'get_next_side');
-       
 
+        next_side = SidesSection(obj,'get_next_side');
+        
+        
+        if strcmp(value(position_mode), 'arc')%%%ARC pole mode 
+ % y =  post_go_lat(:)
+ % x =  post_go(:) 
+ % h = center_main(:)
+ % k = center_lat(:)
+AddedAngle = 0; 
+ 
+ 
+radius = sqrt((post_go(:)-center_main(:))^2 + (post_go_lat(:)-center_lat(:))^2);            
+ArcLengthGO =   2*pi*radius*go_degrees/360;
+ArcLengthGAP =  2*pi*radius*gap_degrees/360;
+ArcLengthNOGO = 2*pi*radius*nogo_degrees/360;
+
+ % y1 =  post_go_lat(:)
+ % x1 =  post_go(:) 
+ 
+ %x2 = center_main(:)
+ %y2 = center_lat(:)
+ 
+ length = abs(center_main(:) - post_go(:));
+ height = abs(center_lat(:) - post_go_lat(:));
+ 
+ lengthBase = sqrt(length^2 + height^2);
+ halfBase = lengthBase/2;
+ 
+ angleToPostGoPosition = 2*(180/pi)*asin((halfBase/radius)*(pi/180));%in degrees 
+            
+            
+            
+            if next_side == 'r'
+                next_pole_angle = go_degrees(:)*((round(rand*(ArcLengthGO)))/ArcLengthGO)+angleToPostGoPosition+AddedAngle;
+                
+                next_pole_position_main = round(center_main(:) - radius * sind(next_pole_angle));
+                next_pole_position_lat = round(center_lat(:) - radius * cosd(next_pole_angle));
+
+                
+            elseif next_side == 'l'
+                next_pole_angle = nogo_degrees(:)*((round(rand*(ArcLengthNOGO)))/ArcLengthNOGO)...
+                    +angleToPostGoPosition+go_degrees+gap_degrees+AddedAngle;
+                                
+                next_pole_position_main = round(center_main(:) - radius * sind(next_pole_angle));
+                next_pole_position_lat = round(center_lat(:) - radius * cosd(next_pole_angle));
+                
+             
+            else 
+                error('un-recognized type for next_side');
+            end
+
+            angle_startTOantGO = angleToPostGoPosition + go_degrees+AddedAngle;
+            angle_startTOantGAP = angle_startTOantGO + gap_degrees;
+            angle_startTOantNOGO = angle_startTOantGAP + nogo_degrees;
+            
+            antGOposition_main = center_main(:) - radius * sind(angle_startTOantGO);
+            antGOposition_lat = center_lat(:) - radius * cosd(angle_startTOantGO);            
+            
+            antGAPposition_main = center_main(:) - radius * sind(angle_startTOantGAP);%same as post nogo position
+            antGAPposition_lat = center_lat(:) - radius * cosd(angle_startTOantGAP); 
+            
+            
+            half_point_main = round(value(antGAPposition_main + antGOposition_main)/2);
+            half_point_lat  = round(value(antGAPposition_lat + antGOposition_lat)/2);
+
+
+%check all this I am just extrapolating from what I see here make sure it
+%translates
+            next_pole_position_main
+            next_pole_position_lat
+            tic
+%             move_absolute_sequence(motors,{half_point_main,next_pole_position_main},value(motor_num));
+%             move_absolute_sequence(motors,{half_point_lat,next_pole_position_lat},value(lateral_motor_num));
+        move_absolute_sequence3(motors,{half_point_main,next_pole_position_main},value(motor_num),...
+            {half_point_lat,next_pole_position_lat},value(lateral_motor_num));
+            movetime = toc
+            if movetime<value(motor_move_time) % Should make this min-ITI a SoloParamHandle
+                pause( value(motor_move_time)-movetime);
+            end
+
+            MotorsSection(obj,'read_positions');
+            trial_ready_times.value = clock;
+
+            previous_pole_positions(n_started_trials) = next_pole_position_main, next_pole_position_lat;%note the two values
+            
+        elseif strcmp(value(position_mode), 'normal')%%%normal pole mode 
             if next_side == 'r'
                 next_pole_position = value(round(rand*(yes_pole_position_ant - yes_pole_position_pos)+yes_pole_position_pos));
             elseif next_side == 'l'
@@ -201,24 +374,24 @@ switch action
 
             half_point = round(value(no_pole_position_pos+yes_pole_position_ant)/2);
 
-   
-                
-        
-        tic
-        move_absolute_sequence(motors,{half_point,next_pole_position},value(motor_num));
-        movetime = toc
-        if movetime<value(motor_move_time) % Should make this min-ITI a SoloParamHandle
-            pause( value(motor_move_time)-movetime);
+
+
+
+            tic
+            move_absolute_sequence(motors,{half_point,next_pole_position},value(motor_num));
+            movetime = toc
+            if movetime<value(motor_move_time) % Should make this min-ITI a SoloParamHandle
+                pause( value(motor_move_time)-movetime);
+            end
+
+            MotorsSection(obj,'read_positions');
+            trial_ready_times.value = clock;
+
+            previous_pole_positions(n_started_trials) = next_pole_position;
+
         end
-
-        MotorsSection(obj,'read_positions');        
-        trial_ready_times.value = clock;  
-        
-        previous_pole_positions(n_started_trials) = next_pole_position;        
-        
-
         return;
-        
+
 
     
     case 'get_previous_pole_position',   % --------- CASE get_next_pole_position ------
@@ -317,10 +490,60 @@ switch action
         p = get_position(motors,value(lateral_motor_num));
         lateral_motor_position.value = p;
         return;
+        %%%%%%%%%%%%%%%%%%%%%%%%%%%%%-PSM joystick
+     case 'move_right'
+            position = value(motor_position)+joystick_increment;
+        if position > value(motor_max_position) 
+           position = value(motor_max_position) -100; %don't want to push to edge -PSM
+        elseif position < 0
+           position = 100;
+        end
+            move_absolute(motors,position,value(motor_num));
+            motor_position.value = position;
+        return;
+      case 'move_left'
+            position = value(motor_position)-joystick_increment;
+        if position > value(motor_max_position) 
+           position = value(motor_max_position) -100; %don't want to push to edge -PSM
+        elseif position < 0
+           position = 100;
+        end
+            move_absolute(motors,position,value(motor_num));
+            motor_position.value = position;
+        return;
+      case 'move_up',
+        position = value(lateral_motor_position)+joystick_increment;
+        if position > value(motor_max_position) 
+           position = value(motor_max_position) -100; %don't want to push to edge -PSM
+        elseif position < 0
+           position = 100;
+        end
+            move_absolute(motors,position,value(lateral_motor_num));
+            lateral_motor_position.value = position;
+        return;
+            
+       case 'move_down',
+        position = value(lateral_motor_position)-joystick_increment;        
+        if position > value(motor_max_position) 
+           position = value(motor_max_position) -100; %don't want to push to edge -PSM
+        elseif position < 0
+           position = 100;
+        end
+            move_absolute(motors,position,value(lateral_motor_num));
+            lateral_motor_position.value = position;
+        return;   
         
-
+    case 'set_both_post_go'
+        post_go_lat.value = round(lateral_motor_position(:));
+        post_go.value = round(motor_position(:));
+         return;  
         
-        
+    case 'set_center'
+        center_lat.value = round(lateral_motor_position(:));
+        center_main.value = round(motor_position(:));
+         return;           
+         %%%%%%%%%%%%%%%%%%%%%%%%%%-PSM joystick
+ 
         % --------- CASE HIDE_SHOW ---------------------------------
 
     case 'hide_show'
