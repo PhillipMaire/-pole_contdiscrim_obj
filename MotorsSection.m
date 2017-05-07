@@ -34,7 +34,11 @@
 function [x, y] = MotorsSection(obj, action, x, y)
 
 GetSoloFunctionArgs;
-
+global radius
+global angleToPostGoPosition;
+global angle_startTOantGO;
+global angle_startTOantGAP;
+global angle_startTOantNOGO;
 global Solo_Try_Catch_Flag
 global motors_properties;
 global motors; 
@@ -332,6 +336,9 @@ ArcLengthNOGO = 2*pi*radius*nogo_degrees/360;
             angle_startTOantGO = angleToPostGoPosition + go_degrees(:)+AddedAngle;
             angle_startTOantGAP = angle_startTOantGO + gap_degrees(:);
             angle_startTOantNOGO = angle_startTOantGAP + nogo_degrees(:);
+            
+       
+            
             if angle_startTOantNOGO > 120 || angle_startTOantNOGO < -90
                 while angle_startTOantNOGO > 120 || angle_startTOantNOGO < -90
                 warning('your angle from vertical downward axis (negative y axis from center)is more than 120 or less than -90. this might hurt the mouse please override or change')
@@ -552,7 +559,86 @@ ArcLengthNOGO = 2*pi*radius*nogo_degrees/360;
         center_main.value = round(motor_position(:));
          return;           
          %%%%%%%%%%%%%%%%%%%%%%%%%%-PSM joystick
- 
+         
+    case 'show_nogo_arc'
+        deg_steps = round(nogo_degrees(:)/3);
+        arc_array = (angle_startTOantGAP:(nogo_degrees(:)/deg_steps):angle_startTOantNOGO);
+        arc_array = [arc_array,fliplr(arc_array)];
+        show_arc_main = round(center_main(:) - radius * sind(arc_array));
+        show_arc_lat = round(center_lat(:) - radius * cosd(arc_array));
+
+        move_absolute_sequence3(motors,{show_arc_main(1)},value(motor_num),...
+            {show_arc_lat(1)},value(lateral_motor_num));
+        pause(1.5);
+        NumArcArray = numel(arc_array);
+        for D = 1:NumArcArray
+            move_absolute_sequence3(motors,{show_arc_main(D)},value(motor_num),...
+                {show_arc_lat(D)},value(lateral_motor_num));
+            pause(.01)
+        end
+        for D =1:2
+            move_absolute_sequence3(motors,{show_arc_main(NumArcArray/2)},value(motor_num),...
+                {show_arc_lat(NumArcArray/2)},value(lateral_motor_num));
+            pause(.5)
+            move_absolute_sequence3(motors,{show_arc_main(1)},value(motor_num),...
+                {show_arc_lat(1)},value(lateral_motor_num));
+            pause(.5)
+
+        end
+        return;
+    case 'show_gap_arc'
+        deg_steps = round(gap_degrees(:)/3);
+        arc_array = (angle_startTOantGO:(gap_degrees(:)/deg_steps):angle_startTOantGAP);
+        arc_array = [arc_array,fliplr(arc_array)];
+        show_arc_main = round(center_main(:) - radius * sind(arc_array));
+        show_arc_lat = round(center_lat(:) - radius * cosd(arc_array));
+
+        move_absolute_sequence3(motors,{show_arc_main(1)},value(motor_num),...
+            {show_arc_lat(1)},value(lateral_motor_num));
+        pause(1.5);
+        NumArcArray = numel(arc_array);
+        for D = 1:NumArcArray
+            move_absolute_sequence3(motors,{show_arc_main(D)},value(motor_num),...
+                {show_arc_lat(D)},value(lateral_motor_num));
+            pause(.01)
+        end
+        for D =1:2
+            move_absolute_sequence3(motors,{show_arc_main(NumArcArray/2)},value(motor_num),...
+                {show_arc_lat(NumArcArray/2)},value(lateral_motor_num));
+            pause(.5)
+            move_absolute_sequence3(motors,{show_arc_main(1)},value(motor_num),...
+                {show_arc_lat(1)},value(lateral_motor_num));
+            pause(.5)
+
+        end
+        return;
+    case 'show_go_arc'
+        deg_steps = round(go_degrees(:)/3);
+        arc_array = (angleToPostGoPosition:(go_degrees(:)/deg_steps):angle_startTOantGO);
+        arc_array = [arc_array,fliplr(arc_array)];
+        show_arc_main = round(center_main(:) - radius * sind(arc_array));
+        show_arc_lat = round(center_lat(:) - radius * cosd(arc_array));
+
+        move_absolute_sequence3(motors,{show_arc_main(1)},value(motor_num),...
+            {show_arc_lat(1)},value(lateral_motor_num));
+        pause(1.5);
+        NumArcArray = numel(arc_array);
+        for D = 1:NumArcArray
+            move_absolute_sequence3(motors,{show_arc_main(D)},value(motor_num),...
+                {show_arc_lat(D)},value(lateral_motor_num));
+            pause(.01)
+        end
+        for D =1:2
+            move_absolute_sequence3(motors,{show_arc_main(NumArcArray/2)},value(motor_num),...
+                {show_arc_lat(NumArcArray/2)},value(lateral_motor_num));
+            pause(.5)
+            move_absolute_sequence3(motors,{show_arc_main(1)},value(motor_num),...
+                {show_arc_lat(1)},value(lateral_motor_num));
+            pause(.5)
+
+        end
+
+        return;
         % --------- CASE HIDE_SHOW ---------------------------------
 
     case 'hide_show'
